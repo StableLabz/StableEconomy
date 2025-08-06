@@ -31,7 +31,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.38")
     annotationProcessor("org.projectlombok:lombok:1.18.38")
 
-    compileOnly("com.zaxxer:HikariCP:6.3.0")
+    compileOnly("com.zaxxer:HikariCP:6.3.2")
     compileOnly("org.xerial:sqlite-jdbc:3.49.1.0")
     compileOnly("com.h2database:h2:2.3.232")
     compileOnly("org.mariadb.jdbc:mariadb-java-client:3.5.3")
