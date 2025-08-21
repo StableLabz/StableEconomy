@@ -2,6 +2,7 @@ package org.stablerpg.stableeconomy.config;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.stablerpg.stableeconomy.AbstractEconomyPlugin;
 
@@ -38,6 +39,10 @@ public abstract class AbstractConfig implements BasicConfig {
     return config;
   }
 
+  public @NotNull File getFile() {
+    return file;
+  }
+
   @Override
   public @NotNull Logger getLogger() {
     return plugin.getLogger();
@@ -48,6 +53,16 @@ public abstract class AbstractConfig implements BasicConfig {
     createFile(plugin);
     if (automaticUpdate) update(plugin);
     loadFile(plugin);
+  }
+
+  @Override
+  public void close() {
+
+  }
+
+  @Override
+  public void open(Player player) {
+    player.sendRichMessage("<red>This plugin does not support opening the configuration file in-game. Please open the file <yellow>%s<red> in your server directory.".formatted(file.getName()));
   }
 
   private void createFile(@NotNull AbstractEconomyPlugin plugin) {

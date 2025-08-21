@@ -3,13 +3,14 @@ package org.stablerpg.stableeconomy.config.shop;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.stablerpg.stableeconomy.EconomyPlatform;
 import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
+import org.stablerpg.stableeconomy.shop.ItemFormatter;
 import org.stablerpg.stableeconomy.shop.ShopCommand;
 import org.stablerpg.stableeconomy.shop.ShopManager;
 import org.stablerpg.stableeconomy.shop.backend.ShopCategory;
-import org.stablerpg.stableeconomy.shop.gui.ItemFormatter;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -130,6 +131,11 @@ public class ShopConfigImpl implements ShopConfig {
   @Override
   public @NotNull Logger getLogger() {
     return platform.getLogger();
+  }
+
+  @Override
+  public void open(Player player) {
+
   }
 
 }

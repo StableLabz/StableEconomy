@@ -9,7 +9,8 @@ public enum ShopMessageType {
   NOT_ENOUGH_SPACE("buy.not-enough-space", "amount", "item-name"),
 
   SUCCESSFULLY_SOLD("sell.successfully-sold", "received-amount", "amount", "item-name"),
-  NOT_ENOUGH_TO_SELL("sell.not-enough-to-sell", "amount", "item-name"),;
+  NOT_ENOUGH_TO_SELL("sell.not-enough-to-sell", "amount", "item-name"),
+  ;
 
   @Getter
   private final String key;

@@ -1,4 +1,4 @@
-package org.stablerpg.stableeconomy.shop.util;
+package org.stablerpg.stableeconomy.shop;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -63,7 +63,7 @@ public final class InventoryUtil {
     return amount;
   }
 
-  private InventoryUtil () {
+  private InventoryUtil() {
     throw new UnsupportedOperationException("This class cannot be instantiated");
   }
 

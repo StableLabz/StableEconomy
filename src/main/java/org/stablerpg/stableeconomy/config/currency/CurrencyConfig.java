@@ -1,17 +1,14 @@
 package org.stablerpg.stableeconomy.config.currency;
 
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.stablerpg.stableeconomy.EconomyPlatform;
 import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
 import org.stablerpg.stableeconomy.currency.Currency;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public final class CurrencyConfig implements CurrencyHolder {
@@ -78,6 +75,11 @@ public final class CurrencyConfig implements CurrencyHolder {
   @Override
   public @NotNull Logger getLogger() {
     return platform.getLogger();
+  }
+
+  @Override
+  public void open(Player player) {
+
   }
 
   @Override

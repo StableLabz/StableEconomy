@@ -1,6 +1,8 @@
 package org.stablerpg.stableeconomy.currency.formatting;
 
-public abstract class CurrencyFormatter {
+import java.util.function.Predicate;
+
+public abstract class CurrencyFormatter implements Predicate<String> {
 
   protected final String formatString;
 
@@ -8,9 +10,13 @@ public abstract class CurrencyFormatter {
     this.formatString = formatString.replaceAll("<amount>", "%s");
   }
 
+  public CurrencyFormatter() {
+    this("%s");
+  }
+
   public static CurrencyFormatter of(Formatters formatter, String formatString) {
     return switch (formatter) {
-      case COOL -> new CoolFormatter(formatString);
+      case STABLE -> new StableFormatter(formatString);
       case COMMA -> new CommaFormatter(formatString);
       case SUFFIX -> new SuffixFormatter(formatString);
       case FAULTY -> new FaultyFormatter(formatString);
@@ -22,5 +28,9 @@ public abstract class CurrencyFormatter {
   }
 
   protected abstract String format0(double amount);
+
+  public abstract boolean test(String value);
+
+  public abstract double unformat(String value);
 
 }

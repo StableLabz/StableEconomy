@@ -8,21 +8,21 @@ starting-balance: 1000
 
 view-command:
   name: balance
-  aliases: [bal]
+  aliases: [ bal ]
 
 transfer-command:
   name: pay
 
 leaderboard-command:
   name: balancetop
-  aliases: [baltop]
+  aliases: [ baltop ]
   page-length: 10
   update-interval: 300 # In seconds
 
 admin-command:
   name: economy
-  aliases: [eco]
+  aliases: [ eco ]
   permission: stableeconomy.default.admin
 
-formatter: COOL
+formatter: STABLE
 format-string: "$<amount>"

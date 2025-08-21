@@ -68,6 +68,4 @@ public final class BalanceEntry implements Comparable<BalanceEntry>, Dirtyable {
   }
 
 
-
-
 }

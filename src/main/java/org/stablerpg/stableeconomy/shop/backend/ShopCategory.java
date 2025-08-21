@@ -1,20 +1,25 @@
 package org.stablerpg.stableeconomy.shop.backend;
 
+import dev.triumphteam.gui.container.GuiContainer;
+import dev.triumphteam.gui.element.GuiItem;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.stablerpg.stableeconomy.EconomyPlatform;
 import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
 import org.stablerpg.stableeconomy.config.shop.ShopLocale;
 import org.stablerpg.stableeconomy.currency.Currency;
+import org.stablerpg.stableeconomy.gui.AbstractGuiItem;
+import org.stablerpg.stableeconomy.shop.ItemFormatter;
 import org.stablerpg.stableeconomy.shop.ShopManager;
-import org.stablerpg.stableeconomy.shop.gui.AbstractGuiItem;
-import org.stablerpg.stableeconomy.shop.gui.ItemFormatter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Getter
 public class ShopCategory {
@@ -59,14 +64,9 @@ public class ShopCategory {
 
     for (String key : itemsSection.getKeys(false)) {
       ConfigurationSection itemSection = itemsSection.getConfigurationSection(key);
-
       //noinspection DataFlowIssue
       int slot = Integer.parseInt(itemSection.getName());
-
-      if (itemSection.isConfigurationSection("item"))
-        category.addGuiItem(slot, TransactableItem.deserialize(platform, currency, itemSection, itemFormatter, locale));
-      else
-        category.addGuiItem(slot, ShopItem.deserialize(manager, itemSection, itemFormatter));
+      category.addGuiItem(AbstractGuiItem.deserialize(platform, currency, slot, itemSection, itemFormatter, locale));
     }
 
     return category;
@@ -78,8 +78,7 @@ public class ShopCategory {
   private final int rows;
   private final ItemBuilder background;
   private final int[] backgroundSlots;
-
-  private final Map<Integer, AbstractGuiItem> items = new HashMap<>();
+  private final Set<AbstractGuiItem> items;
 
   public ShopCategory(ShopManager manager, Component title, int rows, ItemBuilder background, int[] backgroundSlots) {
     this.manager = manager;
@@ -87,10 +86,26 @@ public class ShopCategory {
     this.rows = rows;
     this.background = background;
     this.backgroundSlots = backgroundSlots;
+    this.items = new HashSet<>();
   }
 
-  public void addGuiItem(Integer slot, AbstractGuiItem item) {
-    items.put(slot, item);
+  public void addGuiItem(AbstractGuiItem item) {
+    items.add(item);
+  }
+
+  private @NotNull GuiItem<Player, ItemStack> getBackground() {
+    ItemStack background = this.background.build();
+    background.editMeta(meta -> meta.displayName(Component.space()));
+    return dev.triumphteam.gui.paper.builder.item.ItemBuilder.from(background).asGuiItem();
+  }
+
+  public void drawGui(@NotNull GuiContainer<@NotNull Player, @NotNull ItemStack> container, Player player) {
+    GuiItem<Player, ItemStack> background = getBackground();
+    for (int slot : getBackgroundSlots())
+      container.setItem(slot, background);
+
+    for (AbstractGuiItem item : getItems())
+      container.setItem(item.slot(), item.asGuiItem(player));
   }
 
 }

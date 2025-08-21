@@ -2,6 +2,7 @@ package org.stablerpg.stableeconomy;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import org.stablerpg.stableeconomy.hooks.BStatsHook;
 
 public final class StableEconomy extends AbstractEconomyPlugin {
 
@@ -14,6 +15,7 @@ public final class StableEconomy extends AbstractEconomyPlugin {
   public void onEnable() {
     CommandAPI.onEnable();
     initEconomyPlatform();
+    BStatsHook.load(this);
   }
 
   @Override

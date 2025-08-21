@@ -9,10 +9,6 @@ public abstract class AbstractEconomyPlugin extends JavaPlugin {
 
   private EconomyPlatform economyPlatform;
 
-  protected void setEconomyPlatform(EconomyPlatform economyPlatform) {
-    this.economyPlatform = economyPlatform;
-  }
-
   protected void initEconomyPlatform() {
     if (economyPlatform == null) economyPlatform = new EconomyPlatform(this);
     economyPlatform.init();

@@ -5,8 +5,8 @@ import dev.jorel.commandapi.CommandAPICommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.stablerpg.stableeconomy.commands.Command;
 import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
+import org.stablerpg.stableeconomy.gui.shop.ShopGui;
 import org.stablerpg.stableeconomy.shop.backend.ShopCategory;
-import org.stablerpg.stableeconomy.shop.gui.ShopCategoryView;
 
 public class ShopCommand {
 
@@ -51,8 +51,8 @@ public class ShopCommand {
       command = command.withPermission(this.command.permission());
 
     command.executesPlayer((player, args) -> {
-        new ShopCategoryView(category).open(player);
-      }).register();
+      ShopGui.open(category, player);
+    }).register();
   }
 
   public void unregister() {

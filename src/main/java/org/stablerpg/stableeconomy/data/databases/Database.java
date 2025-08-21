@@ -1,5 +1,6 @@
 package org.stablerpg.stableeconomy.data.databases;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -8,24 +9,23 @@ import org.stablerpg.stableeconomy.config.database.DatabaseConfig;
 import org.stablerpg.stableeconomy.data.PlayerAccount;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 
 public abstract class Database implements Closeable {
+
+  public static @NotNull Database of(@NotNull EconomyPlatform platform) {
+    return switch (platform.getConfig().getDatabaseInfo().getDatabaseType()) {
+      case SQLITE -> new SQLite(platform);
+      case H2 -> new H2(platform);
+      case MYSQL, MARIADB -> new MariaDB(platform);
+      case POSTGRESQL -> new PostgreSQL(platform);
+      case MONGODB -> new MongoDB(platform);
+    };
+  }
 
   private final EconomyPlatform platform;
   protected Set<PlayerAccount> entries;
@@ -37,16 +37,6 @@ public abstract class Database implements Closeable {
   protected Database(@NotNull EconomyPlatform platform) {
     this.platform = platform;
     scheduler = Executors.newSingleThreadScheduledExecutor();
-  }
-
-  public static @NotNull Database of(@NotNull EconomyPlatform platform) {
-    return switch (platform.getConfig().getDatabaseInfo().getDatabaseType()) {
-      case SQLITE -> new SQLite(platform);
-      case H2 -> new H2(platform);
-      case MYSQL, MARIADB -> new MariaDB(platform);
-      case POSTGRESQL -> new PostgreSQL(platform);
-      case MONGODB -> new MongoDB(platform);
-    };
   }
 
   public final EconomyPlatform getPlatform() {
@@ -79,6 +69,16 @@ public abstract class Database implements Closeable {
 
   protected abstract void save();
 
+  public final void createOrUpdateAccount(@NotNull PlayerProfile profile) {
+    Preconditions.checkNotNull(profile, "Player profile cannot be null");
+    UUID id = profile.getId();
+    Preconditions.checkNotNull(id, "Player profile UUID cannot be null");
+    String name = profile.getName();
+    Preconditions.checkNotNull(name, "Player profile username cannot be null");
+
+    createOrUpdateAccount(id, name);
+  }
+
   public final void createOrUpdateAccount(@NotNull UUID uniqueId, @NotNull String username) {
     Preconditions.checkNotNull(uniqueId, "UUID cannot be null");
     Preconditions.checkNotNull(username, "Username cannot be null");
@@ -106,14 +106,14 @@ public abstract class Database implements Closeable {
 
   public final <R> CompletableFuture<R> query(@NotNull UUID uniqueId, @NotNull Function<PlayerAccount, R> query) {
     return getAccount(uniqueId).thenApply(account -> {
-      if (account == null) throw new IllegalStateException("Player account not found for UUID: " + uniqueId);
+      Preconditions.checkNotNull(account, "Player account not found for '%s'", uniqueId);
       return query.apply(account);
     });
   }
 
   public final <R> CompletableFuture<R> query(@NotNull String username, @NotNull Function<PlayerAccount, R> query) {
     return getAccount(username).thenApply(account -> {
-      if (account == null) throw new IllegalStateException("Player account not found for username: " + username);
+      Preconditions.checkNotNull(account, "Player account not found for '%s'", username);
       return query.apply(account);
     });
   }
@@ -125,14 +125,14 @@ public abstract class Database implements Closeable {
 
   public final CompletableFuture<Void> update(@NotNull UUID uniqueId, Consumer<PlayerAccount> consumer) {
     return getAccount(uniqueId).thenAccept(account -> {
-      if (account == null) throw new IllegalStateException("Player account not found for UUID: " + uniqueId);
+      Preconditions.checkNotNull(account, "Player account not found for '%s'", uniqueId);
       consumer.accept(account);
     });
   }
 
   public final CompletableFuture<Void> update(@NotNull String username, Consumer<PlayerAccount> consumer) {
     return getAccount(username).thenAccept(account -> {
-      if (account == null) throw new IllegalStateException("Player account not found for username: " + username);
+      Preconditions.checkNotNull(account, "Player account not found for '%s'", username);
       consumer.accept(account);
     });
   }

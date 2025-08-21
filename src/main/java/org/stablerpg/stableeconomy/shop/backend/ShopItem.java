@@ -7,17 +7,17 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
+import org.stablerpg.stableeconomy.gui.AbstractGuiItem;
+import org.stablerpg.stableeconomy.gui.shop.ShopGui;
+import org.stablerpg.stableeconomy.shop.ItemFormatter;
 import org.stablerpg.stableeconomy.shop.ShopManager;
-import org.stablerpg.stableeconomy.shop.gui.AbstractGuiItem;
-import org.stablerpg.stableeconomy.shop.gui.ItemFormatter;
-import org.stablerpg.stableeconomy.shop.gui.ShopCategoryView;
 
 import java.util.List;
 
-public record ShopItem(ShopManager manager, ItemBuilder itemBuilder, ItemFormatter itemFormatter,
+public record ShopItem(ShopManager manager, int slot, ItemBuilder itemBuilder, ItemFormatter itemFormatter,
                        @NotNull ShopItemAction action, @Nullable String[] actionArgs) implements AbstractGuiItem {
 
-  public static ShopItem deserialize(ShopManager manager, ConfigurationSection section, ItemFormatter itemFormatter) throws DeserializationException {
+  public static ShopItem deserialize(ShopManager manager, int slot, ConfigurationSection section, ItemFormatter itemFormatter) throws DeserializationException {
     ItemBuilder itemBuilder = ItemBuilder.deserialize(section);
     itemFormatter = ItemFormatter.deserialize(section, itemFormatter);
 
@@ -36,7 +36,7 @@ public record ShopItem(ShopManager manager, ItemBuilder itemBuilder, ItemFormatt
       default -> new String[0];
     };
 
-    return new ShopItem(manager, itemBuilder, itemFormatter, action, actionArgs);
+    return new ShopItem(manager, slot, itemBuilder, itemFormatter, action, actionArgs);
   }
 
   public void execute(Player player, ClickContext context) {
@@ -54,7 +54,7 @@ public record ShopItem(ShopManager manager, ItemBuilder itemBuilder, ItemFormatt
         return;
       }
 
-      new ShopCategoryView(category).open(player);
+      ShopGui.open(category, player);
     }
 
     if (action == ShopItemAction.CLOSE_INVENTORY) player.closeInventory();

@@ -1,5 +1,6 @@
-package org.stablerpg.stableeconomy.shop.gui;
+package org.stablerpg.stableeconomy.shop;
 
+import com.google.common.base.Preconditions;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -10,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public record ItemFormatter(@NotNull String nameFormat, @NotNull String loreFormat, @NotNull String buyPriceLore, @NotNull String sellValueLore,
+public record ItemFormatter(@NotNull String nameFormat, @NotNull String loreFormat, @NotNull String buyPriceLore,
+                            @NotNull String sellValueLore,
                             boolean supportsPlaceholderAPI) {
 
   public static ItemFormatter deserialize(ConfigurationSection section, ItemFormatter def) {
@@ -28,20 +30,16 @@ public record ItemFormatter(@NotNull String nameFormat, @NotNull String loreForm
 
   public static ItemFormatter deserialize(ConfigurationSection section) {
     String nameFormat = section.getString("name-format");
-    if (nameFormat == null)
-      throw new IllegalArgumentException("Failed to locate name-format");
+    Preconditions.checkNotNull(nameFormat, "Failed to locate name-format");
 
     String loreFormat = section.getString("lore-format");
-    if (loreFormat == null)
-      throw new IllegalArgumentException("Failed to locate lore-format");
+    Preconditions.checkNotNull(loreFormat, "Failed to locate lore-format");
 
     String buyPriceLore = section.getString("buy-price-lore");
-    if (buyPriceLore == null)
-      throw new IllegalArgumentException("Failed to locate buy-price-lore");
+    Preconditions.checkNotNull(buyPriceLore, "Failed to locate buy-price-lore");
 
     String sellValueLore = section.getString("sell-value-lore");
-    if (sellValueLore == null)
-      throw new IllegalArgumentException("Failed to locate sell-value-lore");
+    Preconditions.checkNotNull(sellValueLore, "Failed to locate sell-value-lore");
 
     nameFormat = nameFormat.replace("<name>", "%s");
     loreFormat = loreFormat.replace("<lore>", "%s");

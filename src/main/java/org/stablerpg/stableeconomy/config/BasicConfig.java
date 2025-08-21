@@ -1,5 +1,6 @@
 package org.stablerpg.stableeconomy.config;
 
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
@@ -9,11 +10,10 @@ public interface BasicConfig extends Closeable {
 
   void load();
 
-  @Override
-  default void close() {
-
-  }
+  void close();
 
   @NotNull Logger getLogger();
+
+  void open(Player player);
 
 }

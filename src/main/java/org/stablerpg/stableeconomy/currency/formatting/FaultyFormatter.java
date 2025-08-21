@@ -6,9 +6,28 @@ public class FaultyFormatter extends CurrencyFormatter {
     super(formatString);
   }
 
+  public FaultyFormatter() {
+    super();
+  }
+
   @Override
   protected String format0(double amount) {
     return String.valueOf(amount);
+  }
+
+  @Override
+  public boolean test(String value) {
+    try {
+      Double.parseDouble(value);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
+
+  @Override
+  public double unformat(String value) {
+    return Double.parseDouble(value);
   }
 
 }

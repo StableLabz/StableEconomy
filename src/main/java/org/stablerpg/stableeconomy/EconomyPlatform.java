@@ -1,12 +1,13 @@
 package org.stablerpg.stableeconomy;
 
+import dev.jorel.commandapi.CommandTree;
+import dev.jorel.commandapi.arguments.LiteralArgument;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.stablerpg.stableeconomy.api.EconomyAPI;
 import org.stablerpg.stableeconomy.api.PriceProvider;
 import org.stablerpg.stableeconomy.config.currency.CurrencyConfig;
@@ -49,12 +50,15 @@ public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
   private VaultHook vaultHook;
   private PlaceholderAPIHook placeholderAPIHook;
 
-  public EconomyPlatform(AbstractEconomyPlugin plugin, DatabaseConfig config, CurrencyHolder currencyHolder, PriceConfig priceConfig, ShopConfig shopConfig) {
+  private final CommandTree command;
+
+  public EconomyPlatform(AbstractEconomyPlugin plugin, DatabaseConfig config, CurrencyHolder currencyHolder, PriceConfig priceConfig, ShopConfig shopConfig, CommandTree command) {
     this.plugin = plugin;
     this.config = config;
     this.currencyHolder = currencyHolder;
     this.priceConfig = priceConfig;
     this.shopConfig = shopConfig;
+    this.command = command;
   }
 
   public EconomyPlatform(AbstractEconomyPlugin plugin) {
@@ -63,6 +67,20 @@ public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
     this.currencyHolder = new CurrencyConfig(this);
     this.priceConfig = new PriceConfigImpl(plugin);
     this.shopConfig = new ShopConfigImpl(this);
+    this.command = new CommandTree(plugin.getName().toLowerCase())
+      .then(LiteralArgument.of("reload")
+        .executes((sender, args) -> {
+          close();
+          init();
+        })
+      )
+      .then(LiteralArgument.of("editConfig")
+        .then(LiteralArgument.of("database")
+          .executesPlayer(((player, args) -> {
+            config.open(player);
+          }))
+        )
+      );
   }
 
   public void init() {
@@ -95,7 +113,7 @@ public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
       vaultHook.close();
       vaultHook = null;
     }
-    PlayerLoginEvent.getHandlerList().unregister(this);
+    AsyncPlayerPreLoginEvent.getHandlerList().unregister(this);
     currencyHolder.close();
     database.close();
     database = null;
@@ -106,9 +124,8 @@ public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public final void onPlayerLoginEvent(PlayerLoginEvent event) {
-    Player player = event.getPlayer();
-    database.createOrUpdateAccount(player.getUniqueId(), player.getName());
+  public final void onPlayerLoginEvent(AsyncPlayerPreLoginEvent event) {
+    database.createOrUpdateAccount(event.getPlayerProfile());
   }
 
   @Override

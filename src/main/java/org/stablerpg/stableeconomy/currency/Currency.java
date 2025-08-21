@@ -2,7 +2,6 @@ package org.stablerpg.stableeconomy.currency;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandTree;
-import dev.jorel.commandapi.arguments.DoubleArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
@@ -18,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import org.stablerpg.stableeconomy.EconomyPlatform;
 import org.stablerpg.stableeconomy.commands.Command;
 import org.stablerpg.stableeconomy.commands.arguments.AccountArgument;
+import org.stablerpg.stableeconomy.commands.arguments.AmountArgument;
 import org.stablerpg.stableeconomy.config.currency.CurrencyLocale;
 import org.stablerpg.stableeconomy.config.currency.CurrencyMessageType;
 import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
@@ -113,7 +113,7 @@ public class Currency {
     if (transferCommand.canBeCreated()) {
       this.transferCommand = new CommandTree(transferCommand.name()).withAliases(transferCommand.aliases());
       if (transferCommand.hasPermission()) this.transferCommand.withPermission(transferCommand.permission());
-      this.transferCommand.then(new AccountArgument(this).then(new DoubleArgument("amount").executesPlayer(this::transferBalance)));
+      this.transferCommand.then(new AccountArgument(this).then(new AmountArgument().executesPlayer(this::transferBalance)));
     } else this.transferCommand = null;
 
     if (leaderboardCommand.canBeCreated()) {
@@ -125,7 +125,13 @@ public class Currency {
       else if (leaderboardCommand.hasPermission()) updatePermission = leaderboardCommand.permission() + ".update";
       else updatePermission = "stableeconomy.leaderboard.update";
 
-      this.leaderboardCommand.then(LiteralArgument.of("update").withPermission(updatePermission).executes(this::executeLeaderboardUpdate)).then(new IntegerArgument("page", 1).setOptional(true).executes(this::viewLeaderboard));
+      this.leaderboardCommand
+        .then(LiteralArgument.of("update")
+          .withPermission(updatePermission)
+          .executes(this::executeLeaderboardUpdate))
+        .then(new IntegerArgument("page", 1)
+          .setOptional(true)
+          .executes(this::viewLeaderboard));
 
       this.leaderboard = new ArrayList<>();
     } else this.leaderboardCommand = null;
@@ -135,7 +141,22 @@ public class Currency {
     if (adminCommand.canBeCreated()) {
       this.adminCommand = new CommandTree(adminCommand.name()).withAliases(adminCommand.aliases());
       if (adminCommand.hasPermission()) this.adminCommand.withPermission(adminCommand.permission());
-      this.adminCommand.then(LiteralArgument.of("give").then(new AccountArgument(this).then(new DoubleArgument("amount").executes(this::addPlayerBalance)))).then(LiteralArgument.of("take").then(new AccountArgument(this).then(new DoubleArgument("amount").executes(this::subtractPlayerBalance)))).then(LiteralArgument.of("set").then(new AccountArgument(this).then(new DoubleArgument("amount").executes(this::setPlayerBalance)))).then(LiteralArgument.of("reset").then(new AccountArgument(this).executes(this::resetPlayerBalance)));
+      this.adminCommand
+        .then(LiteralArgument.of("give")
+          .then(new AccountArgument(this)
+            .then(new AmountArgument("amount")
+              .executes(this::addPlayerBalance))))
+        .then(LiteralArgument.of("take")
+          .then(new AccountArgument(this)
+            .then(new AmountArgument("amount")
+              .executes(this::subtractPlayerBalance))))
+        .then(LiteralArgument.of("set")
+          .then(new AccountArgument(this)
+            .then(new AmountArgument("amount")
+              .executes(this::setPlayerBalance))))
+        .then(LiteralArgument.of("reset")
+          .then(new AccountArgument(this)
+            .executes(this::resetPlayerBalance)));
     } else this.adminCommand = null;
   }
 

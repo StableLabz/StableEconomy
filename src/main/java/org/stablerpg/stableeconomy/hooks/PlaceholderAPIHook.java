@@ -51,7 +51,9 @@ public final class PlaceholderAPIHook extends PlaceholderExpansion implements Cl
   @Override
   public void close() {
     unregister();
-  }  @Override
+  }
+
+  @Override
   public @Nullable String onPlaceholderRequest(final Player player, @NotNull final String params) {
     return onRequest(player, params);
   }
@@ -130,7 +132,6 @@ public final class PlaceholderAPIHook extends PlaceholderExpansion implements Cl
       default -> null;
     };
   }
-
 
 
 }

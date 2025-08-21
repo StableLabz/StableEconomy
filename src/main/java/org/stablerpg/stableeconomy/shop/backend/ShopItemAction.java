@@ -4,6 +4,6 @@ public enum ShopItemAction {
 
   OPEN_CATEGORY,
   CLOSE_INVENTORY,
-  NONE
+  NONE;
 
 }

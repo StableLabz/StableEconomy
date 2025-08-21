@@ -12,18 +12,19 @@ import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
 import org.stablerpg.stableeconomy.config.shop.ShopLocale;
 import org.stablerpg.stableeconomy.config.shop.ShopMessageType;
 import org.stablerpg.stableeconomy.currency.Currency;
-import org.stablerpg.stableeconomy.shop.gui.AbstractGuiItem;
-import org.stablerpg.stableeconomy.shop.gui.ItemFormatter;
-import org.stablerpg.stableeconomy.shop.util.InventoryUtil;
+import org.stablerpg.stableeconomy.gui.AbstractGuiItem;
+import org.stablerpg.stableeconomy.shop.InventoryUtil;
+import org.stablerpg.stableeconomy.shop.ItemFormatter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public record TransactableItem(Currency currency, ItemBuilder itemBuilder, int amount, String displayName, List<String> description,
-                               ItemFormatter itemFormatter, double buyPrice, double sellValue, ShopLocale locale) implements AbstractGuiItem {
+public record TransactableItem(Currency currency, int slot, ItemBuilder itemBuilder, int amount, String displayName,
+                               List<String> description,
+                               ItemFormatter itemFormatter, double buyPrice, double sellValue,
+                               ShopLocale locale) implements AbstractGuiItem {
 
-  public static TransactableItem deserialize(EconomyPlatform platform, Currency currency, ConfigurationSection section, ItemFormatter itemFormatter, ShopLocale locale) throws DeserializationException {
+  public static TransactableItem deserialize(EconomyPlatform platform, Currency currency, int slot, ConfigurationSection section, ItemFormatter itemFormatter, ShopLocale locale) throws DeserializationException {
     ConfigurationSection itemSection = section.getConfigurationSection("item");
 
     if (itemSection == null)
@@ -42,19 +43,7 @@ public record TransactableItem(Currency currency, ItemBuilder itemBuilder, int a
         throw new DeserializationException("Failed to locate buy price for \"%s\"".formatted(section.getName()));
     }
     if (sellValue == -1) sellValue = platform.getPriceProvider().getSellValue(itemBuilder.build());
-    return new TransactableItem(currency, itemBuilder, amount, displayName, description, itemFormatter, buyPrice, sellValue, locale);
-  }
-
-  public TransactableItem(Currency currency, ItemBuilder itemBuilder, int amount, String displayName, List<String> description, ItemFormatter itemFormatter, double buyPrice, double sellValue, ShopLocale locale) {
-    this.currency = currency;
-    this.itemBuilder = itemBuilder;
-    this.amount = amount;
-    this.displayName = displayName;
-    this.description = Collections.unmodifiableList(description);
-    this.itemFormatter = itemFormatter;
-    this.buyPrice = buyPrice;
-    this.sellValue = sellValue;
-    this.locale = locale;
+    return new TransactableItem(currency, slot, itemBuilder, amount, displayName, description, itemFormatter, buyPrice, sellValue, locale);
   }
 
   @Override
