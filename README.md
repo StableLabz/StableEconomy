@@ -12,7 +12,7 @@
 ## Requirements
 
 - Java 21 or newer
-- Paper server (1.21.5+) 
+- Paper server (1.21.8) 
 
 ## Configuration
 

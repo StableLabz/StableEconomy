@@ -49,9 +49,7 @@ public class ConfigGui extends AbstractGui<BasicConfig> {
         public ItemStack build(Player player) {
           ItemStack item = ItemStack.of(Material.PAPER);
           Component displayName = MiniMessage.miniMessage().deserialize(configItem.displayName());
-          item.editMeta(meta -> {
-            meta.displayName(displayName);
-          });
+          item.editMeta(meta -> meta.displayName(displayName));
           return item;
         }
 
