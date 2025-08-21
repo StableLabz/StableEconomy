@@ -24,8 +24,8 @@ import java.util.Set;
 @Getter
 public class ShopCategory {
 
-  public static ShopCategory deserialize(ShopManager manager, ConfigurationSection section, ItemFormatter itemFormatter) throws DeserializationException {
-    EconomyPlatform platform = manager.getPlatform();
+  public static ShopCategory deserialize(EconomyPlatform platform, ConfigurationSection section, ItemFormatter itemFormatter) throws DeserializationException {
+    ShopManager manager = platform.getShopManager();
 
     String rawCurrency = section.getString("currency", "default");
     Optional<Currency> optionalCurrency = platform.getCurrency(rawCurrency);

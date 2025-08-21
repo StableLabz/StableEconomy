@@ -94,7 +94,7 @@ public class ShopConfigImpl implements ShopConfig {
       String id = shopFile.getName().replaceAll("\\.yml", "");
       ShopCategory category;
       try {
-        category = ShopCategory.deserialize(shopManager, categorySection, defaultLoreTemplate);
+        category = ShopCategory.deserialize(platform, categorySection, defaultLoreTemplate);
       } catch (DeserializationException e) {
         getLogger().warning("Failed to deserialize category \"%s\": %s".formatted(id, e.getMessage()));
         continue;

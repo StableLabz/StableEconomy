@@ -19,7 +19,7 @@ public interface AbstractGuiItem {
   static AbstractGuiItem deserialize(EconomyPlatform platform, Currency currency, int slot, ConfigurationSection section, ItemFormatter itemFormatter, ShopLocale locale) throws DeserializationException {
     if (section.isConfigurationSection("item"))
       return TransactableItem.deserialize(platform, currency, slot, section, itemFormatter, locale);
-    return ShopItem.deserialize(platform.getShopManager(), slot, section, itemFormatter);
+    return ShopItem.deserialize(platform, slot, section, itemFormatter);
   }
 
   int slot();

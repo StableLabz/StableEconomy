@@ -6,18 +6,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.stablerpg.stableeconomy.EconomyPlatform;
 import org.stablerpg.stableeconomy.config.exceptions.DeserializationException;
 import org.stablerpg.stableeconomy.gui.AbstractGuiItem;
 import org.stablerpg.stableeconomy.gui.shop.ShopGui;
 import org.stablerpg.stableeconomy.shop.ItemFormatter;
-import org.stablerpg.stableeconomy.shop.ShopManager;
 
 import java.util.List;
 
-public record ShopItem(ShopManager manager, int slot, ItemBuilder itemBuilder, ItemFormatter itemFormatter,
+public record ShopItem(EconomyPlatform platform, int slot, ItemBuilder itemBuilder, ItemFormatter itemFormatter,
                        @NotNull ShopItemAction action, @Nullable String[] actionArgs) implements AbstractGuiItem {
 
-  public static ShopItem deserialize(ShopManager manager, int slot, ConfigurationSection section, ItemFormatter itemFormatter) throws DeserializationException {
+  public static ShopItem deserialize(EconomyPlatform platform, int slot, ConfigurationSection section, ItemFormatter itemFormatter) throws DeserializationException {
     ItemBuilder itemBuilder = ItemBuilder.deserialize(section);
     itemFormatter = ItemFormatter.deserialize(section, itemFormatter);
 
@@ -36,7 +36,7 @@ public record ShopItem(ShopManager manager, int slot, ItemBuilder itemBuilder, I
       default -> new String[0];
     };
 
-    return new ShopItem(manager, slot, itemBuilder, itemFormatter, action, actionArgs);
+    return new ShopItem(platform, slot, itemBuilder, itemFormatter, action, actionArgs);
   }
 
   public void execute(Player player, ClickContext context) {
@@ -44,13 +44,13 @@ public record ShopItem(ShopManager manager, int slot, ItemBuilder itemBuilder, I
 
     if (action == ShopItemAction.OPEN_CATEGORY) {
       if (actionArgs == null || actionArgs.length == 0) {
-        manager.getPlatform().getLogger().warning("Shop category ID not specified");
+        platform.getLogger().warning("Shop category ID not specified");
         return;
       }
 
-      ShopCategory category = manager.getCategory(actionArgs[0]);
+      ShopCategory category = platform.getShopManager().getCategory(actionArgs[0]);
       if (category == null) {
-        manager.getPlatform().getLogger().warning("Shop category " + actionArgs[0] + " not found");
+        platform.getLogger().warning("Shop category " + actionArgs[0] + " not found");
         return;
       }
 
