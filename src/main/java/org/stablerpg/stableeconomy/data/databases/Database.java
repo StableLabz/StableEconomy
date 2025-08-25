@@ -3,6 +3,10 @@ package org.stablerpg.stableeconomy.data.databases;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.jetbrains.annotations.NotNull;
 import org.stablerpg.stableeconomy.EconomyPlatform;
 import org.stablerpg.stableeconomy.config.database.DatabaseConfig;
@@ -15,7 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-public abstract class Database implements Closeable {
+public abstract class Database implements Listener, Closeable {
 
   public static @NotNull Database of(@NotNull EconomyPlatform platform) {
     return switch (platform.getConfig().getDatabaseInfo().getDatabaseType()) {
@@ -49,6 +53,7 @@ public abstract class Database implements Closeable {
     entriesByUUID = new HashMap<>(initialCapacity);
     entriesByUsername = new HashMap<>(initialCapacity);
     load();
+    Bukkit.getPluginManager().registerEvents(this, platform.getPlugin());
     long autoSaveInterval = getConfig().getDatabaseInfo().getAutoSaveInterval();
     autoSaveTask = getScheduler().scheduleAtFixedRate(this::save, autoSaveInterval, autoSaveInterval, TimeUnit.SECONDS);
   }
@@ -143,7 +148,14 @@ public abstract class Database implements Closeable {
     return leaderboard;
   }
 
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public final void onPlayerLoginEvent(AsyncPlayerPreLoginEvent event) {
+    createOrUpdateAccount(event.getPlayerProfile());
+  }
+
+  @Override
   public void close() {
+    AsyncPlayerPreLoginEvent.getHandlerList().unregister(this);
     autoSaveTask.cancel(false);
     save();
 

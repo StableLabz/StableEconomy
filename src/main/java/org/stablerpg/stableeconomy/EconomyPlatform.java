@@ -4,10 +4,6 @@ import dev.jorel.commandapi.CommandTree;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.stablerpg.stableeconomy.api.EconomyAPI;
 import org.stablerpg.stableeconomy.api.PriceProvider;
 import org.stablerpg.stableeconomy.config.currency.CurrencyConfig;
@@ -31,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
+public class EconomyPlatform implements EconomyAPI, Closeable {
 
   @Getter
   private final AbstractEconomyPlugin plugin;
@@ -91,7 +87,6 @@ public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
 
     database = Database.of(this);
 
-    Bukkit.getPluginManager().registerEvents(this, plugin);
     loadHooks();
     Bukkit.getGlobalRegionScheduler().runDelayed(plugin, task -> loadHooks(), 20L);
   }
@@ -113,7 +108,6 @@ public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
       vaultHook.close();
       vaultHook = null;
     }
-    AsyncPlayerPreLoginEvent.getHandlerList().unregister(this);
     currencyHolder.close();
     database.close();
     database = null;
@@ -121,11 +115,6 @@ public class EconomyPlatform implements EconomyAPI, Listener, Closeable {
 
   public Logger getLogger() {
     return plugin.getLogger();
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public final void onPlayerLoginEvent(AsyncPlayerPreLoginEvent event) {
-    database.createOrUpdateAccount(event.getPlayerProfile());
   }
 
   @Override

@@ -41,3 +41,4 @@ See the [LICENSE](LICENSE) file for full terms and conditions.
 - [ ] Implement NBT support for AdvancedPricedItems
 - [ ] Implement support for backups & restores
 - [ ] Implement a configurable sell command with the ability to sell specific items, all items, hand, and within a gui
+- [ ] Heavily abstract the Economy Platform allowing entire systems to be replaced (e.g., database, currency, pricing, shops, hooks, etc.)
