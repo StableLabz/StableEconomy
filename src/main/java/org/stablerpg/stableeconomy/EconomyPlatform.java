@@ -43,8 +43,8 @@ public class EconomyPlatform implements EconomyAPI, Closeable {
 
   private Database database;
 
-  private VaultHook vaultHook;
-  private PlaceholderAPIHook placeholderAPIHook;
+  private final VaultHook vaultHook;
+  private final PlaceholderAPIHook placeholderAPIHook;
 
   private final CommandTree command;
 
@@ -55,6 +55,8 @@ public class EconomyPlatform implements EconomyAPI, Closeable {
     this.priceConfig = priceConfig;
     this.shopConfig = shopConfig;
     this.command = command;
+    this.vaultHook = new VaultHook(plugin);
+    this.placeholderAPIHook = new PlaceholderAPIHook(plugin);
   }
 
   public EconomyPlatform(AbstractEconomyPlugin plugin) {
@@ -77,6 +79,8 @@ public class EconomyPlatform implements EconomyAPI, Closeable {
           }))
         )
       );
+    this.vaultHook = new VaultHook(plugin);
+    this.placeholderAPIHook = new PlaceholderAPIHook(plugin);
   }
 
   public void init() {
@@ -92,22 +96,18 @@ public class EconomyPlatform implements EconomyAPI, Closeable {
   }
 
   private void loadHooks() {
-    if (Bukkit.getPluginManager().isPluginEnabled("Vault")) vaultHook = new VaultHook(this);
-    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) placeholderAPIHook = new PlaceholderAPIHook(this);
+    if (vaultHook.canLoad())
+      vaultHook.load();
+    if (placeholderAPIHook.canLoad())
+      placeholderAPIHook.load();
   }
 
   @Override
   public void close() {
     shopConfig.close();
     priceConfig.close();
-    if (placeholderAPIHook != null) {
-      placeholderAPIHook.close();
-      placeholderAPIHook = null;
-    }
-    if (vaultHook != null) {
-      vaultHook.close();
-      vaultHook = null;
-    }
+    placeholderAPIHook.close();
+    vaultHook.close();
     currencyHolder.close();
     database.close();
     database = null;

@@ -15,7 +15,7 @@ public final class StableEconomy extends AbstractEconomyPlugin {
   public void onEnable() {
     CommandAPI.onEnable();
     initEconomyPlatform();
-    BStatsHook.load(this);
+    new BStatsHook(this);
   }
 
   @Override

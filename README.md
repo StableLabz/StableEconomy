@@ -42,3 +42,6 @@ See the [LICENSE](LICENSE) file for full terms and conditions.
 - [ ] Implement support for backups & restores
 - [ ] Implement a configurable sell command with the ability to sell specific items, all items, hand, and within a gui
 - [ ] Heavily abstract the Economy Platform allowing entire systems to be replaced (e.g., database, currency, pricing, shops, hooks, etc.)
+    - [ ] Registration system for configs, hooks, and general systems (e.g. shop, database, currency).
+    - [ ] Implement service interfaces and abstract classes allowing for easy replacement
+- [ ] Refactor database to be used persistently instead of requiring replacement on each reload

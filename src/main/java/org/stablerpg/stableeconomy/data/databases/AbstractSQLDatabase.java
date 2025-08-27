@@ -10,19 +10,13 @@ import org.stablerpg.stableeconomy.data.util.ByteArrayWrapper;
 import org.stablerpg.stableeconomy.data.util.DataUtils;
 import org.stablerpg.stableeconomy.data.util.DatabaseInfo;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.logging.Level;
 
 public abstract class AbstractSQLDatabase extends Database {
 
-  private final HikariDataSource dataSource;
+  private HikariDataSource dataSource;
 
   protected AbstractSQLDatabase(Class<? extends Driver> driver, @NotNull EconomyPlatform platform) {
     super(platform);
@@ -31,15 +25,6 @@ public abstract class AbstractSQLDatabase extends Database {
     } catch (Exception exception) {
       throw new RuntimeException("Failed to register SQL driver: " + driver.getName(), exception);
     }
-
-    HikariConfig hikariConfig = new HikariConfig();
-
-    hikariConfig.setAutoCommit(false);
-
-    processConfig(hikariConfig, getConfig().getDatabaseInfo());
-
-    dataSource = new HikariDataSource(hikariConfig);
-
     setup();
   }
 
@@ -47,6 +32,11 @@ public abstract class AbstractSQLDatabase extends Database {
 
   @Override
   protected void setup() {
+    HikariConfig hikariConfig = new HikariConfig();
+    hikariConfig.setAutoCommit(false);
+    processConfig(hikariConfig, getConfig().getDatabaseInfo());
+    dataSource = new HikariDataSource(hikariConfig);
+
     try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
       statement.execute("CREATE TABLE IF NOT EXISTS player_entries(uniqueId BINARY(16) PRIMARY KEY, username VARCHAR(16));");
       statement.execute("CREATE TABLE IF NOT EXISTS balance_entries(uniqueId BINARY(16), currency VARCHAR(16), balance DOUBLE, FOREIGN KEY(uniqueId) REFERENCES player_entries(uniqueId), UNIQUE(uniqueId, currency));");

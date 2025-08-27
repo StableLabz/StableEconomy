@@ -11,15 +11,15 @@ import org.jetbrains.annotations.NotNull;
 import org.stablerpg.stableeconomy.EconomyPlatform;
 import org.stablerpg.stableeconomy.config.database.DatabaseConfig;
 import org.stablerpg.stableeconomy.data.PlayerAccount;
+import org.stablerpg.stableeconomy.service.AbstractDatabaseService;
 
-import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-public abstract class Database implements Listener, Closeable {
+public abstract class Database extends AbstractDatabaseService implements Listener {
 
   public static @NotNull Database of(@NotNull EconomyPlatform platform) {
     return switch (platform.getConfig().getDatabaseInfo().getDatabaseType()) {
@@ -31,7 +31,6 @@ public abstract class Database implements Listener, Closeable {
     };
   }
 
-  private final EconomyPlatform platform;
   protected Set<PlayerAccount> entries;
   protected Map<UUID, PlayerAccount> entriesByUUID;
   protected Map<String, PlayerAccount> entriesByUsername;
@@ -39,21 +38,17 @@ public abstract class Database implements Listener, Closeable {
   private ScheduledFuture<?> autoSaveTask;
 
   protected Database(@NotNull EconomyPlatform platform) {
-    this.platform = platform;
-    scheduler = Executors.newSingleThreadScheduledExecutor();
-  }
-
-  public final EconomyPlatform getPlatform() {
-    return platform;
+    super(platform);
   }
 
   protected void setup() {
+    scheduler = Executors.newSingleThreadScheduledExecutor();
     int initialCapacity = lookupEntryCount() * 2;
     entries = new HashSet<>(initialCapacity);
     entriesByUUID = new HashMap<>(initialCapacity);
     entriesByUsername = new HashMap<>(initialCapacity);
     load();
-    Bukkit.getPluginManager().registerEvents(this, platform.getPlugin());
+    Bukkit.getPluginManager().registerEvents(this, getPlatform().getPlugin());
     long autoSaveInterval = getConfig().getDatabaseInfo().getAutoSaveInterval();
     autoSaveTask = getScheduler().scheduleAtFixedRate(this::save, autoSaveInterval, autoSaveInterval, TimeUnit.SECONDS);
   }
@@ -62,37 +57,26 @@ public abstract class Database implements Listener, Closeable {
     return Bukkit.getOfflinePlayers().length;
   }
 
-  protected abstract void load();
-
-  public final DatabaseConfig getConfig() {
-    return platform.getConfig();
+  protected final DatabaseConfig getConfig() {
+    return getPlatform().getConfig();
   }
 
   protected final ScheduledExecutorService getScheduler() {
     return scheduler;
   }
 
-  protected abstract void save();
-
-  public final void createOrUpdateAccount(@NotNull PlayerProfile profile) {
-    Preconditions.checkNotNull(profile, "Player profile cannot be null");
-    UUID id = profile.getId();
-    Preconditions.checkNotNull(id, "Player profile UUID cannot be null");
-    String name = profile.getName();
-    Preconditions.checkNotNull(name, "Player profile username cannot be null");
-
-    createOrUpdateAccount(id, name);
+  public final void createOrUpdateUsername(@NotNull PlayerProfile profile) {
   }
 
-  public final void createOrUpdateAccount(@NotNull UUID uniqueId, @NotNull String username) {
-    Preconditions.checkNotNull(uniqueId, "UUID cannot be null");
+  public final void createOrUpdateUsername(@NotNull UUID id, @NotNull String username) {
+    Preconditions.checkNotNull(id, "UUID cannot be null");
     Preconditions.checkNotNull(username, "Username cannot be null");
-    getAccount(uniqueId).thenAccept(account -> {
+    getAccount(id).thenAccept(account -> {
       if (account != null) {
         account.updateUsername(username);
         entriesByUsername.entrySet().removeIf(e -> e.getValue().equals(account));
         entriesByUsername.put(username, account);
-      } else add(new PlayerAccount(platform, uniqueId, username));
+      } else add(new PlayerAccount(platform, id, username));
     });
   }
 
@@ -128,14 +112,14 @@ public abstract class Database implements Listener, Closeable {
     return CompletableFuture.supplyAsync(() -> entriesByUsername.get(username), getScheduler());
   }
 
-  public final CompletableFuture<Void> update(@NotNull UUID uniqueId, Consumer<PlayerAccount> consumer) {
+  public final CompletableFuture<Void> update(@NotNull UUID uniqueId, @NotNull Consumer<PlayerAccount> consumer) {
     return getAccount(uniqueId).thenAccept(account -> {
       Preconditions.checkNotNull(account, "Player account not found for '%s'", uniqueId);
       consumer.accept(account);
     });
   }
 
-  public final CompletableFuture<Void> update(@NotNull String username, Consumer<PlayerAccount> consumer) {
+  public final CompletableFuture<Void> update(@NotNull String username, @NotNull Consumer<PlayerAccount> consumer) {
     return getAccount(username).thenAccept(account -> {
       Preconditions.checkNotNull(account, "Player account not found for '%s'", username);
       consumer.accept(account);
@@ -150,7 +134,7 @@ public abstract class Database implements Listener, Closeable {
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public final void onPlayerLoginEvent(AsyncPlayerPreLoginEvent event) {
-    createOrUpdateAccount(event.getPlayerProfile());
+    createOrUpdateUsername(event.getPlayerProfile());
   }
 
   @Override
